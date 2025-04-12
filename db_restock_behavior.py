@@ -1,30 +1,11 @@
-import psycopg2
 from datetime import datetime, timedelta
-from db_structure import overspending_log, underperformance_log
+from db_config import get_db_connection
 
-# --- Database Connection Helper ---
-def get_db_connection():
-    return psycopg2.connect(
-        dbname="your_db_name",
-        user="your_username",
-        password="your_password",
-        host="localhost",
-        port="5432"
-    )
-
-# --- Get Incoming Deliveries ---
-def get_pending_supplier_deliveries(conn):
-    with conn.cursor() as cur:
-        cur.execute("""
-            SELECT transaction_id, supplier_id, product_id, quantity_received, weight, date_time, cost
-            FROM supplier_delivery
-            WHERE status = 'pending'
-            ORDER BY date_time ASC;
-        """)
-        return cur.fetchall()
+# Define a fixed simulation start time (08:00 AM)
+SIMULATION_START_TIME = datetime.strptime("08:00", "%H:%M").time()
 
 # --- Get Warehouse Capacity ---
-def get_warehouse_space(conn):
+def get_inventory_space(conn):
     with conn.cursor() as cur:
         cur.execute("""
             SELECT capacity_pellets, current_pellets, to_be_received
@@ -33,80 +14,147 @@ def get_warehouse_space(conn):
         """)
         return cur.fetchone()
 
-# --- Log Unloading Queue ---
-def log_unloading_queue(conn, truck_id, employee_id, quantity):
-    now = datetime.now()
-    start = now
-    end = now + timedelta(minutes=30)
+# --- Get Inventory Status ---
+def get_inventory_status(conn, product_id):
+    """
+    Returns four columns from the inventory table:
+       current_pellets, to_be_sent, to_be_received, capacity_pellets.
+    """
     with conn.cursor() as cur:
         cur.execute("""
-            INSERT INTO unloading_queue (
-                forklift_id, employee_id, expected_time,
-                start_time, finalized_time, quantity, truck_id, date_time
-            ) VALUES (
-                1, %s, INTERVAL '30 minutes', %s, %s, %s, %s, %s
-            );
-        """, (employee_id, start, end, quantity, truck_id, now))
-    conn.commit()
-    return start, end
-
-# --- Log to Transactions Table ---
-def log_transaction(conn, transaction_id, cost):
-    now = datetime.now()
-    with conn.cursor() as cur:
-        cur.execute("""
-            INSERT INTO transactions (
-                transaction_id, type, cost, date, date_time
-            ) VALUES (%s, 'supplier_delivery', %s, %s, %s);
-        """, (transaction_id, cost, now.date(), now))
-    conn.commit()
-
-# --- Update Inventory and Mark Delivery Complete ---
-def process_delivery(conn, delivery_id, product_id, quantity, cost):
-    with conn.cursor() as cur:
-        cur.execute("""
-            UPDATE inventory
-            SET current_pellets = current_pellets + %s,
-                to_be_received = to_be_received - %s
+            SELECT current_pellets, to_be_sent, to_be_received, capacity_pellets
+            FROM inventory
             WHERE inventory_id = 1;
-        """, (quantity, quantity))
+        """)
+        return cur.fetchone()
 
+# --- Get Pallet Cost ---
+def get_pallet_cost(conn, product_id):
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT pallet_cost FROM product_pellets
+            WHERE product_id = %s;
+        """, (product_id,))
+        result = cur.fetchone()
+        # Return a float; if NULL, use 0.0
+        return float(result[0]) if result is not None and result[0] is not None else 0.0
+
+# --- Get Default Weight ---
+def get_product_weight(conn, product_id):
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT AVG(weight) FROM product_pellet
+            WHERE name = (SELECT name FROM product_pellets WHERE product_id = %s);
+        """, (product_id,))
+        result = cur.fetchone()
+        # Fallback to 30.0
+        return float(result[0]) if result is not None and result[0] is not None else 30.0
+
+# --- Unload Supplier Delivery (Single-Product Mode) ---
+def unload_supplier_delivery(conn, delivery, current_date):
+    """
+    Processes a pending supplier delivery for a single product.
+    
+    Expects a supplier_delivery record with 6 columns:
+      (transaction_id, product_id, quantity_received, cost, weight, delivery_date)
+    
+    Steps:
+      1. Mark the supplier_delivery record as 'received'.
+      2. Retrieve product details (name, category) from product_pellets.
+      3. For each delivered unit, insert one product_pellet record with:
+            - cost from get_pallet_cost (unit cost)
+            - weight from get_product_weight (unit weight)
+            - received = current_date
+            - sell_by = current_date + 50 days.
+         Collect the returned pellet IDs.
+      4. Update the inventory: Increase current_pellets by delivered quantity and 
+         decrease to_be_received (clamped at 0).
+      5. Log a supplier_delivery transaction with cost calculated as:
+               cost = get_pallet_cost(conn, product_id) * quantity.
+      6. Return a summary dictionary.
+    """
+    delivery_id, product_id, quantity, _, weight, _ = delivery
+    # Compute cost dynamically.
+    computed_cost = get_pallet_cost(conn, product_id) * quantity
+    
+    with conn.cursor() as cur:
+        # Mark delivery as received.
         cur.execute("""
             UPDATE supplier_delivery
             SET status = 'received', order_received = %s
             WHERE transaction_id = %s;
-        """, (datetime.now(), delivery_id))
+        """, (current_date, delivery_id))
+        
+        # Retrieve product details.
+        cur.execute("""
+            SELECT name, category FROM product_pellets
+            WHERE product_id = %s;
+        """, (product_id,))
+        row = cur.fetchone()
+        if row:
+            name, category = row
+        else:
+            raise Exception(f"Product details not found for product_id {product_id} in delivery {delivery_id}")
 
-    log_transaction(conn, delivery_id, cost)
+        pellet_ids = []
+        for _ in range(quantity):
+            cur.execute("""
+                INSERT INTO product_pellet (
+                    name, category, cost, weight, received,
+                    sell_by, refrigerated, sent
+                ) VALUES (%s, %s, %s, %s, %s, %s, FALSE, FALSE)
+                RETURNING pellet_id;
+            """, (
+                name,
+                category,
+                get_pallet_cost(conn, product_id),
+                get_product_weight(conn, product_id),
+                current_date,
+                current_date + timedelta(days=50)
+            ))
+            pellet_id = cur.fetchone()[0]
+            pellet_ids.append(pellet_id)
+        
+        # Update inventory.
+        cur.execute("""
+            UPDATE inventory
+            SET current_pellets = current_pellets + %s,
+                to_be_received = GREATEST(to_be_received - %s, 0)
+            WHERE inventory_id = 1;
+        """, (quantity, quantity))
+        # Log transaction using the computed cost.
+        cur.execute("""
+            INSERT INTO transactions (type, cost, date, date_time)
+            VALUES ('supplier_delivery', %s, %s, %s);
+        """, (computed_cost, current_date, current_date))
     conn.commit()
+    
+    return {
+        "delivered_dict": {str(product_id): pellet_ids},
+        "total_quantity": quantity,
+        "total_cost": computed_cost,
+        "total_weight": (weight if weight is not None else get_product_weight(conn, product_id)) * quantity
+    }
 
-# --- Unloading Engine ---
-def unload_supplier_deliveries():
+def unload_supplier_deliveries(current_date):
+    """
+    Processes all pending supplier deliveries in single-product mode.
+    """
     conn = get_db_connection()
-    with conn:
-        deliveries = get_pending_supplier_deliveries(conn)
-        for delivery_id, supplier_id, product_id, quantity, weight, created_time, cost in deliveries:
-            capacity, current, incoming = get_warehouse_space(conn)
-            available_space = capacity - current
-
-            if available_space < quantity:
-                print(f"Skipping delivery {delivery_id}, not enough space.")
-                continue
-
-            employee_id = 1
-            truck_id = 1
-
-            start_time, end_time = log_unloading_queue(conn, truck_id, employee_id, quantity)
-            process_delivery(conn, delivery_id, product_id, quantity, cost)
-
-            # Overspending log (mock expected cost = quantity * 2.5 for demo)
-            expected_cost = quantity * 2.5
-            log_overspending(conn, delivery_id, expected_cost, cost, employee_id)
-
-            # Underperformance log for unloading delay
-            expected_duration = timedelta(minutes=30)
-            actual_duration = end_time - start_time
-            log_underperformance(conn, 'forklift', employee_id, 'unloading_delay', expected_duration, actual_duration)
-
-if __name__ == "__main__":
-    unload_supplier_deliveries()
+    with conn.cursor() as cur:
+        cur.execute("""
+            SELECT transaction_id, product_id, quantity_received, cost, weight, date_time
+            FROM supplier_delivery
+            WHERE status = 'pending'
+            ORDER BY date_time ASC;
+        """)
+        deliveries = cur.fetchall()
+    
+    for delivery in deliveries:
+        try:
+            summary = unload_supplier_delivery(conn, delivery, current_date)
+            #print(f"Processed delivery {delivery[0]} on {current_date}. Summary: {summary}")
+        except Exception as e:
+            conn.rollback()
+            #print(f"Error processing delivery {delivery[0]} on {current_date}: {e}")
+            continue
