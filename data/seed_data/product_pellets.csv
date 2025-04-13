@@ -1,0 +1,48 @@
+product_id,name,category,quantity,pallet_cost
+1,Whole Milk,Dairy,263,140.4
+2,2% Milk,Dairy,763,54.29
+3,Lactose-Free Milk,Dairy,553,173.18
+4,Cheddar Cheese,Dairy,737,192.36
+5,Mozzarella Cheese,Dairy,881,46.15
+6,Yogurt Cups,Dairy,351,72.0
+7,Greek Yogurt,Dairy,818,53.37
+8,Parmesan,Dairy,385,162.85
+9,Butter,Dairy,463,111.8
+10,Cream Cheese,Dairy,422,119.79
+11,Romaine Lettuce,Produce,887,107.09
+12,Baby Spinach,Produce,173,84.59
+13,Tomatoes,Produce,508,89.25
+14,Cucumbers,Produce,775,46.06
+15,Carrots,Produce,706,63.07
+16,Potatoes,Produce,775,118.39
+17,Onions,Produce,449,64.51
+18,Apples,Produce,180,59.16
+19,Bananas,Produce,243,186.72
+20,Oranges,Produce,403,139.53
+21,Ground Beef,Meat,870,169.44
+22,Chicken Breast,Meat,793,60.7
+23,Pork Chops,Meat,801,71.28
+24,Bacon,Meat,707,154.48
+25,Sausage Links,Meat,666,84.99
+26,Ham Slices,Meat,392,85.93
+27,Salmon Fillet,Meat,876,100.46
+28,Tilapia,Meat,309,199.02
+29,Shrimp (Frozen),Meat,455,58.87
+30,Turkey Ground,Meat,269,144.82
+31,Pasta,Pantry,826,165.53
+32,White Rice,Pantry,120,59.5
+33,Brown Rice,Pantry,697,136.97
+34,All-purpose Flour,Pantry,795,45.1
+35,Sugar,Pantry,314,191.12
+36,Salt,Pantry,239,50.45
+37,Olive Oil,Pantry,324,85.61
+38,Vegetable Oil,Pantry,360,155.78
+39,Canned Beans,Pantry,921,89.73
+40,Peanut Butter,Pantry,944,111.76
+41,Toilet Paper,Household,438,145.05
+42,Paper Towels,Household,241,120.65
+43,Dish Soap,Household,456,120.37
+44,Laundry Detergent,Household,803,169.42
+45,Trash Bags,Household,463,81.31
+46,Bleach,Household,165,49.42
+47,Sponges,Household,21,66.96
