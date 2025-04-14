@@ -80,6 +80,10 @@ In the Jupyter Notebook, I performed exploratory data analysis with visualizatio
 
 I built forecasting models, such as ARIMA, for monthly demand for each product. These forecasts inform the determination of optimal monthly restock quantities and cost comparisons. I then computed and compared the historical restock cost with the new forecasted cost and derived the price margin necessary to achieve a 1% profit margin.
 
+### Interactive Tableau Dashboard
+
+I created an interactive Tableau dashboard that presents a comprehensive view of our logistics operations. The dashboard features detailed visualizations of key metrics such as monthly transaction costs, net revenue trends, fuel expenses, and driver performance. By exploring the dashboard, you can dive into operational insights and identify optimization opportunities in our supply chain. You can access the live dashboard [here](https://public.tableau.com/views/Logistics_17445446866560/Dashboard2?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link) and interact with the data in real time.
+
 ## How to Run the Project
 
 1. **Database Setup**  
@@ -96,6 +100,9 @@ I built forecasting models, such as ARIMA, for monthly demand for each product. 
 
 5. **Predictive Modeling**  
    Run the forecasting and optimization code to evaluate potential improvements in restocking efficiency and profitability.
+
+6. **Tableau Dashboard**
+   In tableau build WorkSheets for the data obtained, so far. Then use them to implement a Dashboard.
 
 ## Conclusion
 
