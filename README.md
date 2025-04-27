@@ -1,6 +1,6 @@
 # Logistics_Database_Project
 
-My project is an end-to-end simulation and analysis of a logistics operation. The project covers every stage of the process: from building the database and defining operational behaviors, to generating and inserting data, running a multi-year simulation, and finally performing exploratory data analysis, predictive modeling, and cost analytics.
+My project is an end to end simulation and analysis of a logistics operation. The project covers every stage of the process: from building the database and defining operational behaviors, to generating and inserting data, running a multi year simulation, and finally performing exploratory data analysis, predictive modeling, and cost analytics.
 
 ## Overview
 
@@ -8,7 +8,7 @@ I built a comprehensive database system that supports logistics operations inclu
 
 ## Database Design and Schema
 
-The database schema consists of several core tables:
+  The database schema is made of several core tables:
 
 * **Store**  
   Contains details such as name, address, distance from the warehouse, expected travel time, and operating hours.
@@ -93,7 +93,7 @@ I created an interactive Tableau dashboard that presents a comprehensive view of
    Run the data generation and insertion scripts to populate the database with synthetic data.
 
 3. **Operational Simulation**  
-   Execute the simulation scripts to generate multi-year operational data.
+   Execute the simulation scripts to generate multi year operational data.
 
 4. **Analysis Notebook**  
    Open the Jupyter Notebook to perform EDA, forecast demand, and conduct financial cost analyses.
@@ -106,5 +106,5 @@ I created an interactive Tableau dashboard that presents a comprehensive view of
 
 ## Conclusion
 
-This project demonstrates a complete end-to-end solution for managing logistics operations, from database creation and simulation to analysis and forecasting. The insights gained from EDA and predictive modeling will guide future enhancements in cost savings, inventory management, and overall operational efficiency.
+This project demonstrates a complete end to end solution for managing logistics operations, from database creation and simulation to analysis and forecasting. The insights gained from EDA and predictive modeling will guide future enhancements in cost savings, inventory management, and overall operational efficiency.
 
