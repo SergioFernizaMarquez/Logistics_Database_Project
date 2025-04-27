@@ -2,9 +2,13 @@
 
 My project is an end to end simulation and analysis of a logistics operation. The project covers every stage of the process: from building the database and defining operational behaviors, to generating and inserting data, running a multi year simulation, and finally performing exploratory data analysis, predictive modeling, and cost analytics.
 
+---
+
 ## Overview
 
 I built a comprehensive database system that supports logistics operations including inventory management, order processing, truck and employee management, supplier deliveries, and financial transaction logging. Using Python scripts, I simulated operations over multiple years, generated synthetic data, and populated the database. I then used Jupyter Notebook for exploratory data analysis, visualization, demand forecasting, and cost efficiency comparisons. This project ultimately aims to improve our logistics performance and demonstrate potential cost savings.
+
+---
 
 ## Database Design and Schema
 
@@ -37,6 +41,8 @@ I built a comprehensive database system that supports logistics operations inclu
 * **Overspending Log and Underperformance Log**  
   Log anomalies related to expenses and performance for further analysis.
 
+---
+
 ## Operational Behaviors and Simulation
 
 I implemented various Python modules to simulate logistics operations:
@@ -59,13 +65,19 @@ These behaviors are integrated into a daily simulation that
 * Processes new customer orders  
 * Fulfills orders and logs performance metrics
 
+---
+
 ## Data Generation and Insertion
 
 I developed scripts to generate realistic synthetic data for inventory levels, orders, deliveries, fuel consumption, and financial transactions. The generated data populates the database and forms the basis for simulation and analysis.
 
+---
+
 ## Multi-Year Simulation
 
 The simulation runs over multiple years to mimic real-world operations. This longitudinal data is used for trend analysis, time series forecasting, and performance evaluation.
+
+---
 
 ## Exploratory Data Analysis and Visualization
 
@@ -76,13 +88,19 @@ In the Jupyter Notebook, I performed exploratory data analysis with visualizatio
 * Financial analysis of transactions across different types  
 * Outlier detection and anomaly analysis
 
+---
+
 ## Predictive Modeling and Cost Analytics
 
 I built forecasting models, such as ARIMA, for monthly demand for each product. These forecasts inform the determination of optimal monthly restock quantities and cost comparisons. I then computed and compared the historical restock cost with the new forecasted cost and derived the price margin necessary to achieve a 1% profit margin.
 
-### Interactive Tableau Dashboard
+---
+
+## Interactive Tableau Dashboard
 
 I created an interactive Tableau dashboard that presents a comprehensive view of our logistics operations. The dashboard features detailed visualizations of key metrics such as monthly transaction costs, net revenue trends, fuel expenses, and driver performance. By exploring the dashboard, you can dive into operational insights and identify optimization opportunities in our supply chain. You can access the live dashboard [here](https://public.tableau.com/views/Logistics_17445446866560/Dashboard2?:language=en-US&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link) and interact with the data in real time.
+
+---
 
 ## How to Run the Project
 
@@ -104,7 +122,8 @@ I created an interactive Tableau dashboard that presents a comprehensive view of
 6. **Tableau Dashboard**
    In tableau build WorkSheets for the data obtained, so far. Then use them to implement a Dashboard.
 
+---
+
 ## Conclusion
 
 This project demonstrates a complete end to end solution for managing logistics operations, from database creation and simulation to analysis and forecasting. The insights gained from EDA and predictive modeling will guide future enhancements in cost savings, inventory management, and overall operational efficiency.
-
